@@ -145,5 +145,5 @@ const eventGenerator = (): IEvent => {
   const events = [1, 2, 3, 4, 5].map(i => eventGenerator());
 
   // publish the events
-  events.map(pubSubService.publish);
+  events.map(event => pubSubService.publish(event));
 })();
