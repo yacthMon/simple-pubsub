@@ -122,16 +122,17 @@ class MachineSaleSubscriber implements ISubscriber {
   constructor(private readonly _machineRepository: MachineRepository) { }
 
   handle(event: MachineSaleEvent, eventHolder?: IEvent[]): void {
-    const targetMachine = this._machineRepository.getMachineById(event.machineId());
+    const machineId = event.machineId()
     IS_DEBUG_LOG && console.log(`[MachineSaleSubscriber] Event receive`, event);
 
-    if (!targetMachine) return console.error("No machine found for the event");
+    if (!this._machineRepository.isMachineExist(machineId)) return console.error("No machine found for the event");
 
-    const stockLevelBeforeEvent = targetMachine.stockLevel;
-    targetMachine.stockLevel -= event.getSoldQuantity();
-    if (stockLevelBeforeEvent >= LOW_STOCK_WARNING_THRESHOLD
-      && targetMachine.stockLevel < LOW_STOCK_WARNING_THRESHOLD) {
-      const lowStockWarningEvent = new LowStockWarningEvent(targetMachine.stockLevel, targetMachine.id);
+    const preStockLevel = this._machineRepository.getStockRemain(machineId);
+    this._machineRepository.reduceStock(machineId, event.getSoldQuantity());
+    const postStockLevel = this._machineRepository.getStockRemain(machineId);
+    if (preStockLevel >= LOW_STOCK_WARNING_THRESHOLD
+      && postStockLevel < LOW_STOCK_WARNING_THRESHOLD) {
+      const lowStockWarningEvent = new LowStockWarningEvent(postStockLevel, machineId);
       eventHolder?.push(lowStockWarningEvent);
     }
   }
@@ -141,16 +142,17 @@ class MachineRefillSubscriber implements ISubscriber {
   constructor(private readonly _machineRepository: MachineRepository) { }
 
   handle(event: MachineRefillEvent, eventHolder?: IEvent[]): void {
-    const targetMachine = this._machineRepository.getMachineById(event.machineId());
+    const machineId = event.machineId()
     IS_DEBUG_LOG && console.log(`[MachineRefillSubscriber] Event receive`, event);
 
-    if (!targetMachine) return console.error("No machine found for the event");
+    if (!this._machineRepository.isMachineExist(machineId)) return console.error("No machine found for the event");
 
-    const stockLevelBeforeEvent = targetMachine.stockLevel;
-    targetMachine.stockLevel += event.refillAmount();
-    if (stockLevelBeforeEvent < LOW_STOCK_WARNING_THRESHOLD
-      && targetMachine.stockLevel >= LOW_STOCK_WARNING_THRESHOLD) {
-      const stockLevelOkEvent = new StockLevelOkEvent(targetMachine.stockLevel, targetMachine.id);
+    const preStockLevel = this._machineRepository.getStockRemain(machineId);
+    this._machineRepository.refillStock(machineId, event.refillAmount());
+    const postStockLevel = this._machineRepository.getStockRemain(machineId);
+    if (preStockLevel < LOW_STOCK_WARNING_THRESHOLD
+      && postStockLevel >= LOW_STOCK_WARNING_THRESHOLD) {
+      const stockLevelOkEvent = new StockLevelOkEvent(postStockLevel, machineId);
       eventHolder?.push(stockLevelOkEvent);
     }
   }
@@ -189,6 +191,28 @@ class MachineRepository {
 
   public getMachineById(machineId: string): Machine | undefined {
     return this._machines.find(machine => machine.id == machineId)
+  }
+
+  public isMachineExist(machineId: string): boolean {
+    return this._machines.findIndex(machine => machine.id == machineId) > -1
+  }
+
+  public getStockRemain(machineId: string): number {
+    const machine = this.getMachineById(machineId);
+    if (!machine) throw new Error(`Machine ID [${machineId}] does not exist.`);
+    return machine.stockLevel;
+  }
+
+  public reduceStock(machineId: string, total: number): void {
+    const machine = this.getMachineById(machineId);
+    if (!machine) throw new Error(`Machine ID [${machineId}] does not exist.`);
+    machine.stockLevel -= total;
+  }
+
+  public refillStock(machineId: string, total: number): void {
+    const machine = this.getMachineById(machineId);
+    if (!machine) throw new Error(`Machine ID [${machineId}] does not exist.`);
+    machine.stockLevel += total;
   }
 }
 
