@@ -245,6 +245,10 @@ const eventGenerator = (): IEvent => {
   const saleSubscriber = new MachineSaleSubscriber(machines);
   // create a machine refill event subscriber.
   const refillSubscriber = new MachineRefillSubscriber(machines);
+  // create a stock warning event subscriber.
+  const stockWarningSubscriber = new StockWarningSubscriber(machines);
+  // create a stock level ok event subscriber.
+  const stockLevelOkSubscriber = new StockLevelOkSubscriber(machines);
 
   // create the PubSub service
   const pubSubService: IPublishSubscribeService = new PublishSubscribeService(); // implement and fix this
@@ -253,6 +257,11 @@ const eventGenerator = (): IEvent => {
   pubSubService.subscribe(EVENT_TYPE.SALE, saleSubscriber);
   // reigster refillSubscriber with event "refill"
   pubSubService.subscribe(EVENT_TYPE.REFIL, refillSubscriber);
+  // reigster stockWarningSubscriber with event "low_stock_warning"
+  pubSubService.subscribe(EVENT_TYPE.LOW_STOCK_WARNING, stockWarningSubscriber);
+  // reigster stockLevelOkSubscriber with event "stock_level_ok"
+  pubSubService.subscribe(EVENT_TYPE.STOCK_LEVEL_OK, stockLevelOkSubscriber);
+
   // create 5 random events
   const events = [1, 2, 3, 4, 5].map(i => eventGenerator());
 
