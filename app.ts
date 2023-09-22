@@ -21,6 +21,7 @@ enum EVENT_TYPE {
   STOCK_LEVEL_OK = "stock_level_ok",
 }
 
+const LOW_STOCK_WARNING_THRESHOLD = 3;
 
 // implementations
 class MachineSaleEvent implements IEvent {
@@ -129,7 +130,13 @@ class MachineSaleSubscriber implements ISubscriber {
       console.error("Unknown machine event occurs");
       return;
     }
+    const stockLevelBeforeEvent = targetMachine.stockLevel;
     targetMachine.stockLevel -= event.getSoldQuantity();
+    if (stockLevelBeforeEvent >= LOW_STOCK_WARNING_THRESHOLD
+      && targetMachine.stockLevel < LOW_STOCK_WARNING_THRESHOLD) {
+      const lowStockWarningEvent = new LowStockWarningEvent(targetMachine.stockLevel, targetMachine.id);
+      eventHolder?.push(lowStockWarningEvent);
+    }
   }
 
   private getMachineById(machineId: string): Machine | undefined {
@@ -150,7 +157,13 @@ class MachineRefillSubscriber implements ISubscriber {
       console.error("Unknown machine event occurs");
       return;
     }
+    const stockLevelBeforeEvent = targetMachine.stockLevel;
     targetMachine.stockLevel += event.refillAmount();
+    if (stockLevelBeforeEvent < LOW_STOCK_WARNING_THRESHOLD
+      && targetMachine.stockLevel >= LOW_STOCK_WARNING_THRESHOLD) {
+      const stockLevelOkEvent = new StockLevelOkEvent(targetMachine.stockLevel, targetMachine.id);
+      eventHolder?.push(stockLevelOkEvent);
+    }
   }
 
   private getMachineById(machineId: string): Machine | undefined {
@@ -216,7 +229,7 @@ const eventGenerator = (): IEvent => {
   do {
     const event = events.shift();
     if (!event) break;
-  // publish the events
+    // publish the events
     pubSubService.publish(event, events);
   } while (events.length > 0)
 
