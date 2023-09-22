@@ -98,7 +98,7 @@ class PublishSubscribeService implements IPublishSubscribeService {
   publish(event: IEvent): void {
     const subscribers = this.eventSubscribe[event.type()];
     if (!subscribers) return console.log("No subscriber");
-    subscribers.every(subscriber => subscriber.handle(event));
+    subscribers.forEach(subscriber => subscriber.handle(event));
   };
 
   subscribe(type: string, handler: ISubscriber): void {
