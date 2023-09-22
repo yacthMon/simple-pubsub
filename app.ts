@@ -263,7 +263,24 @@ const eventGenerator = (): IEvent => {
   pubSubService.subscribe(EVENT_TYPE.STOCK_LEVEL_OK, stockLevelOkSubscriber);
 
   // create 5 random events
-  const events = [1, 2, 3, 4, 5].map(i => eventGenerator());
+  const events = [];
+
+
+  // TESTING For Stock level warning and Stock level ok event.
+  // Add Sold event for machine 001 to met the Low Stock Warning threshold.
+  events.push(new MachineSaleEvent(8, "001"));
+  // Add Sold event again, this one should not create more Low Stock Warning event.
+  events.push(new MachineSaleEvent(1, "001"));
+  // Add Sold event for machine 002 to met the Low Stock Warning threshold.
+  events.push(new MachineSaleEvent(8, "002"));
+  // Add Refill event for machine 002 to met the Stock Level OK condition
+  events.push(new MachineRefillEvent(5, "002"));
+  // Add Refill event again, this one should not create more Stock level ok event.
+  events.push(new MachineRefillEvent(2, "002"));
+  // There should be 2 Stock Warning Event and 1 Stock Level OK Event
+
+  // Original Generate random event
+  // events.push(...[1, 2, 3, 4, 5].map(i => eventGenerator()));
 
   do {
     const event = events.shift();
