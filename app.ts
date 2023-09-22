@@ -22,6 +22,7 @@ enum EVENT_TYPE {
 }
 
 const LOW_STOCK_WARNING_THRESHOLD = 3;
+const IS_DEBUG_LOG = true;
 
 // implementations
 class MachineSaleEvent implements IEvent {
@@ -126,6 +127,8 @@ class MachineSaleSubscriber implements ISubscriber {
 
   handle(event: MachineSaleEvent, eventHolder?: IEvent[]): void {
     const targetMachine = this.getMachineById(event.machineId());
+    IS_DEBUG_LOG && console.log(`[MachineSaleSubscriber] Event receive`, event);
+
     if (!targetMachine) {
       console.error("Unknown machine event occurs");
       return;
@@ -153,6 +156,8 @@ class MachineRefillSubscriber implements ISubscriber {
 
   handle(event: MachineRefillEvent, eventHolder?: IEvent[]): void {
     const targetMachine = this.getMachineById(event.machineId());
+    IS_DEBUG_LOG && console.log(`[MachineRefillSubscriber] Event receive`, event);
+
     if (!targetMachine) {
       console.error("Unknown machine event occurs");
       return;
@@ -208,6 +213,7 @@ const eventGenerator = (): IEvent => {
 
 // program
 (async () => {
+  IS_DEBUG_LOG && console.log(`[Main] Test Begin`);
   // create 3 machines with a quantity of 10 stock
   const machines: Machine[] = [new Machine('001'), new Machine('002'), new Machine('003')];
 
@@ -233,6 +239,9 @@ const eventGenerator = (): IEvent => {
     pubSubService.publish(event, events);
   } while (events.length > 0)
 
+  IS_DEBUG_LOG && console.log(`[Main] Machine Status after every event`, machines);
+
   // unsubscribe the saleSubscribe handler from event "sale"
   pubSubService.unsubscribe(EVENT_TYPE.SALE, saleSubscriber);
+  IS_DEBUG_LOG && console.log(`[Main] Test End.`);
 })();
