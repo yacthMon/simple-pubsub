@@ -11,7 +11,7 @@ interface ISubscriber {
 interface IPublishSubscribeService {
   publish(event: IEvent): void;
   subscribe(type: string, handler: ISubscriber): void;
-  // unsubscribe ( /* Question 2 - build this feature */ );
+  unsubscribe(type: string, handler: ISubscriber): void;
 }
 
 enum EVENT_TYPE {
@@ -74,6 +74,12 @@ class PublishSubscribeService implements IPublishSubscribeService {
       this.eventSubscribe[type] = [handler];
     }
   };
+
+  unsubscribe(type: string, handler: ISubscriber): void {
+    const subscribers = this.eventSubscribe[type];
+    if (!subscribers) return console.log("Subscribe not found.");
+    this.eventSubscribe[type] = subscribers.filter(subscribedHandler => subscribedHandler != handler);
+  }
 }
 
 class MachineSaleSubscriber implements ISubscriber {
@@ -155,4 +161,7 @@ const eventGenerator = (): IEvent => {
 
   // publish the events
   events.map(event => pubSubService.publish(event));
+
+  // unsubscribe the saleSubscribe handler from event "sale"
+  pubSubService.unsubscribe(EVENT_TYPE.SALE, saleSubscriber);
 })();
