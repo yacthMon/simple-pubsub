@@ -125,10 +125,8 @@ class MachineSaleSubscriber implements ISubscriber {
     const targetMachine = this._machineRepository.getMachineById(event.machineId());
     IS_DEBUG_LOG && console.log(`[MachineSaleSubscriber] Event receive`, event);
 
-    if (!targetMachine) {
-      console.error("Unknown machine event occurs");
-      return;
-    }
+    if (!targetMachine) return console.error("No machine found for the event");
+
     const stockLevelBeforeEvent = targetMachine.stockLevel;
     targetMachine.stockLevel -= event.getSoldQuantity();
     if (stockLevelBeforeEvent >= LOW_STOCK_WARNING_THRESHOLD
@@ -146,10 +144,8 @@ class MachineRefillSubscriber implements ISubscriber {
     const targetMachine = this._machineRepository.getMachineById(event.machineId());
     IS_DEBUG_LOG && console.log(`[MachineRefillSubscriber] Event receive`, event);
 
-    if (!targetMachine) {
-      console.error("Unknown machine event occurs");
-      return;
-    }
+    if (!targetMachine) return console.error("No machine found for the event");
+
     const stockLevelBeforeEvent = targetMachine.stockLevel;
     targetMachine.stockLevel += event.refillAmount();
     if (stockLevelBeforeEvent < LOW_STOCK_WARNING_THRESHOLD
