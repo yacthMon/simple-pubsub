@@ -166,11 +166,14 @@ const eventGenerator = (): IEvent => {
 
   // create a machine sale event subscriber. inject the machines (all subscribers should do this)
   const saleSubscriber = new MachineSaleSubscriber(machines);
+  // create a machine refill event subscriber.
+  const refillSubscriber = new MachineRefillSubscriber(machines);
 
   // create the PubSub service
   const pubSubService: IPublishSubscribeService = new PublishSubscribeService(); // implement and fix this
 
   pubSubService.subscribe(EVENT_TYPE.SALE, saleSubscriber);
+  pubSubService.subscribe(EVENT_TYPE.REFIL, refillSubscriber);
   // create 5 random events
   const events = [1, 2, 3, 4, 5].map(i => eventGenerator());
 
