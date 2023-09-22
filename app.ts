@@ -54,6 +54,28 @@ class MachineRefillEvent implements IEvent {
   }
 }
 
+class PublishSubscribeService implements IPublishSubscribeService {
+  private eventSubscribe: { [key: string]: ISubscriber[] };
+
+  constructor() {
+    this.eventSubscribe = {};
+  }
+
+  publish(event: IEvent): void {
+    const subscribers = this.eventSubscribe[event.type()];
+    if (!subscribers) return console.log("No subscriber");
+    subscribers.every(subscriber => subscriber.handle(event));
+  };
+
+  subscribe(type: string, handler: ISubscriber): void {
+    if (this.eventSubscribe[type]) {
+      this.eventSubscribe[type].push(handler);
+    } else {
+      this.eventSubscribe[type] = [handler];
+    }
+  };
+}
+
 class MachineSaleSubscriber implements ISubscriber {
   public machines: Machine[];
 
@@ -116,7 +138,7 @@ const eventGenerator = (): IEvent => {
   const saleSubscriber = new MachineSaleSubscriber(machines);
 
   // create the PubSub service
-  const pubSubService: IPublishSubscribeService = null as unknown as IPublishSubscribeService; // implement and fix this
+  const pubSubService: IPublishSubscribeService = new PublishSubscribeService(); // implement and fix this
 
   // create 5 random events
   const events = [1, 2, 3, 4, 5].map(i => eventGenerator());
