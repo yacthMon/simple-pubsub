@@ -5,7 +5,7 @@ interface IEvent {
 }
 
 interface ISubscriber {
-  handle(event: IEvent): void;
+  handle(event: IEvent, eventHolder?: IEvent[]): void;
 }
 
 interface IPublishSubscribeService {
@@ -97,10 +97,10 @@ class PublishSubscribeService implements IPublishSubscribeService {
     this.eventSubscribe = {};
   }
 
-  publish(event: IEvent): void {
+  publish(event: IEvent, eventHolder: IEvent[]): void {
     const subscribers = this.eventSubscribe[event.type()];
     if (!subscribers) return console.log("No subscriber");
-    subscribers.forEach(subscriber => subscriber.handle(event));
+    subscribers.forEach(subscriber => subscriber.handle(event, eventHolder));
   };
 
   subscribe(type: string, handler: ISubscriber): void {
