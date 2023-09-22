@@ -119,14 +119,10 @@ class PublishSubscribeService implements IPublishSubscribeService {
 }
 
 class MachineSaleSubscriber implements ISubscriber {
-  public machines: Machine[];
-
-  constructor(machines: Machine[]) {
-    this.machines = machines;
-  }
+  constructor(private readonly _machineRepository: MachineRepository) { }
 
   handle(event: MachineSaleEvent, eventHolder?: IEvent[]): void {
-    const targetMachine = this.getMachineById(event.machineId());
+    const targetMachine = this._machineRepository.getMachineById(event.machineId());
     IS_DEBUG_LOG && console.log(`[MachineSaleSubscriber] Event receive`, event);
 
     if (!targetMachine) {
@@ -141,21 +137,13 @@ class MachineSaleSubscriber implements ISubscriber {
       eventHolder?.push(lowStockWarningEvent);
     }
   }
-
-  private getMachineById(machineId: string): Machine | undefined {
-    return this.machines.find(machine => machine.id == machineId)
-  }
 }
 
 class MachineRefillSubscriber implements ISubscriber {
-  public machines: Machine[];
-
-  constructor(machines: Machine[]) {
-    this.machines = machines;
-  }
+  constructor(private readonly _machineRepository: MachineRepository) { }
 
   handle(event: MachineRefillEvent, eventHolder?: IEvent[]): void {
-    const targetMachine = this.getMachineById(event.machineId());
+    const targetMachine = this._machineRepository.getMachineById(event.machineId());
     IS_DEBUG_LOG && console.log(`[MachineRefillSubscriber] Event receive`, event);
 
     if (!targetMachine) {
@@ -170,18 +158,10 @@ class MachineRefillSubscriber implements ISubscriber {
       eventHolder?.push(stockLevelOkEvent);
     }
   }
-
-  private getMachineById(machineId: string): Machine | undefined {
-    return this.machines.find(machine => machine.id == machineId)
-  }
 }
 
 class StockWarningSubscriber implements ISubscriber {
-  public machines: Machine[];
-
-  constructor(machines: Machine[]) {
-    this.machines = machines;
-  }
+  constructor(private readonly _machineRepository: MachineRepository) { }
 
   handle(event: LowStockWarningEvent, eventHolder?: IEvent[]): void {
     IS_DEBUG_LOG && console.log(`[StockWarningSubscriber] Event receive`, event);
@@ -189,11 +169,7 @@ class StockWarningSubscriber implements ISubscriber {
 }
 
 class StockLevelOkSubscriber implements ISubscriber {
-  public machines: Machine[];
-
-  constructor(machines: Machine[]) {
-    this.machines = machines;
-  }
+  constructor(private readonly _machineRepository: MachineRepository) { }
 
   handle(event: StockLevelOkEvent, eventHolder?: IEvent[]): void {
     IS_DEBUG_LOG && console.log(`[StockLevelOkSubscriber] Event receive`, event);
@@ -208,6 +184,15 @@ class Machine {
 
   constructor(id: string) {
     this.id = id;
+  }
+}
+
+class MachineRepository {
+
+  constructor(private _machines: Machine[]) { }
+
+  public getMachineById(machineId: string): Machine | undefined {
+    return this._machines.find(machine => machine.id == machineId)
   }
 }
 
@@ -240,15 +225,16 @@ const eventGenerator = (): IEvent => {
   IS_DEBUG_LOG && console.log(`[Main] Test Begin`);
   // create 3 machines with a quantity of 10 stock
   const machines: Machine[] = [new Machine('001'), new Machine('002'), new Machine('003')];
+  const machineRepository = new MachineRepository(machines);
 
   // create a machine sale event subscriber. inject the machines (all subscribers should do this)
-  const saleSubscriber = new MachineSaleSubscriber(machines);
+  const saleSubscriber = new MachineSaleSubscriber(machineRepository);
   // create a machine refill event subscriber.
-  const refillSubscriber = new MachineRefillSubscriber(machines);
+  const refillSubscriber = new MachineRefillSubscriber(machineRepository);
   // create a stock warning event subscriber.
-  const stockWarningSubscriber = new StockWarningSubscriber(machines);
+  const stockWarningSubscriber = new StockWarningSubscriber(machineRepository);
   // create a stock level ok event subscriber.
-  const stockLevelOkSubscriber = new StockLevelOkSubscriber(machines);
+  const stockLevelOkSubscriber = new StockLevelOkSubscriber(machineRepository);
 
   // create the PubSub service
   const pubSubService: IPublishSubscribeService = new PublishSubscribeService(); // implement and fix this
