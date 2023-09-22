@@ -14,6 +14,11 @@ interface IPublishSubscribeService {
   // unsubscribe ( /* Question 2 - build this feature */ );
 }
 
+enum EVENT_TYPE {
+  SALE = "sale",
+  REFIL = "refil"
+}
+
 
 // implementations
 class MachineSaleEvent implements IEvent {
@@ -28,7 +33,7 @@ class MachineSaleEvent implements IEvent {
   }
 
   type(): string {
-    return "sale";
+    return EVENT_TYPE.SALE;
   }
 }
 
@@ -45,7 +50,7 @@ class MachineRefillEvent implements IEvent {
   }
 
   type(): string {
-    return "refill";
+    return EVENT_TYPE.REFIL;
   }
 }
 
