@@ -298,6 +298,18 @@ const eventGenerator = (): IEvent => {
   IS_DEBUG_LOG && console.log(`[Main] Machine Status after every event`, machines);
 
   // unsubscribe the saleSubscribe handler from event "sale"
+  IS_DEBUG_LOG && console.log(`[Main] Unsubscribe saleSubscriber for Sale Event.`);
   pubSubService.unsubscribe(EVENT_TYPE.SALE, saleSubscriber);
+  IS_DEBUG_LOG && console.log(`[Main] PubSub Service.`, pubSubService);
+  pubSubService.subscribe(EVENT_TYPE.SALE, saleSubscriber);
+  // Register RefillSubscriber for "sale" event, this is to test that unsubscribe work with correct event and handler
+  pubSubService.subscribe(EVENT_TYPE.SALE, refillSubscriber);
+  IS_DEBUG_LOG && console.log(`[Main] Subscribe again with additional subscriber on Sale Event.`);
+  IS_DEBUG_LOG && console.log(`[Main] PubSub Service.`, pubSubService);
+  pubSubService.unsubscribe(EVENT_TYPE.SALE, saleSubscriber);
+  IS_DEBUG_LOG && console.log(`[Main] Unsubscribe saleSubscriber for Sale Event.`);
+  // At this point it should be RefillSubscriber subscribe for "sale" event
+  IS_DEBUG_LOG && console.log(`[Main] PubSub Service.`, pubSubService);
+
   IS_DEBUG_LOG && console.log(`[Main] Test End.`);
 })();
