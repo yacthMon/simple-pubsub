@@ -28,19 +28,24 @@ class MachineSaleEvent implements IEvent {
   }
 
   type(): string {
-    return 'sale';
+    return "sale";
   }
 }
 
 class MachineRefillEvent implements IEvent {
+
   constructor(private readonly _refill: number, private readonly _machineId: string) { }
 
   machineId(): string {
-    throw new Error("Method not implemented.");
+    return this._machineId;
+  }
+
+  refillAmount(): number {
+    return this._refill;
   }
 
   type(): string {
-    throw new Error("Method not implemented.");
+    return "refill";
   }
 }
 
