@@ -104,8 +104,23 @@ class MachineSaleSubscriber implements ISubscriber {
 }
 
 class MachineRefillSubscriber implements ISubscriber {
-  handle(event: IEvent): void {
-    throw new Error("Method not implemented.");
+  public machines: Machine[];
+
+  constructor(machines: Machine[]) {
+    this.machines = machines;
+  }
+
+  handle(event: MachineRefillEvent): void {
+    const targetMachine = this.getMachineById(event.machineId());
+    if (!targetMachine) {
+      console.error("Unknown machine event occurs");
+      return;
+    }
+    targetMachine.stockLevel += event.refillAmount();
+  }
+
+  private getMachineById(machineId: string): Machine | undefined {
+    return this.machines.find(machine => machine.id == machineId)
   }
 }
 
