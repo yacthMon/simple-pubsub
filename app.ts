@@ -16,7 +16,9 @@ interface IPublishSubscribeService {
 
 enum EVENT_TYPE {
   SALE = "sale",
-  REFIL = "refil"
+  REFIL = "refil",
+  LOW_STOCK_WARNING = "low_stock_warning",
+  STOCK_LEVEL_OK = "stock_level_ok",
 }
 
 
@@ -51,6 +53,38 @@ class MachineRefillEvent implements IEvent {
 
   type(): string {
     return EVENT_TYPE.REFIL;
+  }
+}
+
+class LowStockWarningEvent implements IEvent {
+  constructor(private readonly _stockRemain: number, private readonly _machineId: string) { }
+
+  machineId(): string {
+    return this._machineId;
+  }
+
+  stockRemain(): number {
+    return this._stockRemain;
+  }
+
+  type(): string {
+    return EVENT_TYPE.LOW_STOCK_WARNING;
+  }
+}
+
+class StockLevelOkEvent implements IEvent {
+  constructor(private readonly _stockRemain: number, private readonly _machineId: string) { }
+
+  machineId(): string {
+    return this._machineId;
+  }
+
+  stockRemain(): number {
+    return this._stockRemain;
+  }
+
+  type(): string {
+    return EVENT_TYPE.STOCK_LEVEL_OK;
   }
 }
 
