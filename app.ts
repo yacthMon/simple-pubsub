@@ -176,6 +176,30 @@ class MachineRefillSubscriber implements ISubscriber {
   }
 }
 
+class StockWarningSubscriber implements ISubscriber {
+  public machines: Machine[];
+
+  constructor(machines: Machine[]) {
+    this.machines = machines;
+  }
+
+  handle(event: LowStockWarningEvent, eventHolder?: IEvent[]): void {
+    IS_DEBUG_LOG && console.log(`[StockWarningSubscriber] Event receive`, event);
+  }
+}
+
+class StockLevelOkSubscriber implements ISubscriber {
+  public machines: Machine[];
+
+  constructor(machines: Machine[]) {
+    this.machines = machines;
+  }
+
+  handle(event: StockLevelOkEvent, eventHolder?: IEvent[]): void {
+    IS_DEBUG_LOG && console.log(`[StockLevelOkSubscriber] Event receive`, event);
+  }
+}
+
 
 // objects
 class Machine {
