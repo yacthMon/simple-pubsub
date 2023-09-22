@@ -84,7 +84,16 @@ class MachineSaleSubscriber implements ISubscriber {
   }
 
   handle(event: MachineSaleEvent): void {
-    this.machines[2].stockLevel -= event.getSoldQuantity();
+    const targetMachine = this.getMachineById(event.machineId());
+    if (!targetMachine) {
+      console.error("Unknown machine event occurs");
+      return;
+    }
+    targetMachine.stockLevel -= event.getSoldQuantity();
+  }
+
+  private getMachineById(machineId: string): Machine | undefined {
+    return this.machines.find(machine => machine.id == machineId)
   }
 }
 
