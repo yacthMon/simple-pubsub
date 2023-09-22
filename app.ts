@@ -140,6 +140,7 @@ const eventGenerator = (): IEvent => {
   // create the PubSub service
   const pubSubService: IPublishSubscribeService = new PublishSubscribeService(); // implement and fix this
 
+  pubSubService.subscribe(EVENT_TYPE.SALE, saleSubscriber);
   // create 5 random events
   const events = [1, 2, 3, 4, 5].map(i => eventGenerator());
 
