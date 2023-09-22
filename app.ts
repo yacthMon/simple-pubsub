@@ -9,7 +9,7 @@ interface ISubscriber {
 }
 
 interface IPublishSubscribeService {
-  publish(event: IEvent): void;
+  publish(event: IEvent, eventHolder?: IEvent[]): void;
   subscribe(type: string, handler: ISubscriber): void;
   unsubscribe(type: string, handler: ISubscriber): void;
 }
@@ -123,7 +123,7 @@ class MachineSaleSubscriber implements ISubscriber {
     this.machines = machines;
   }
 
-  handle(event: MachineSaleEvent): void {
+  handle(event: MachineSaleEvent, eventHolder?: IEvent[]): void {
     const targetMachine = this.getMachineById(event.machineId());
     if (!targetMachine) {
       console.error("Unknown machine event occurs");
@@ -144,7 +144,7 @@ class MachineRefillSubscriber implements ISubscriber {
     this.machines = machines;
   }
 
-  handle(event: MachineRefillEvent): void {
+  handle(event: MachineRefillEvent, eventHolder?: IEvent[]): void {
     const targetMachine = this.getMachineById(event.machineId());
     if (!targetMachine) {
       console.error("Unknown machine event occurs");
@@ -213,8 +213,12 @@ const eventGenerator = (): IEvent => {
   // create 5 random events
   const events = [1, 2, 3, 4, 5].map(i => eventGenerator());
 
+  do {
+    const event = events.shift();
+    if (!event) break;
   // publish the events
-  events.map(event => pubSubService.publish(event));
+    pubSubService.publish(event, events);
+  } while (events.length > 0)
 
   // unsubscribe the saleSubscribe handler from event "sale"
   pubSubService.unsubscribe(EVENT_TYPE.SALE, saleSubscriber);
